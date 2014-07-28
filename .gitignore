@@ -1,0 +1,12 @@
+# Ignore compress tar files
+*.tar.gz
+
+# Ignore gedit turd files
+*~
+
+# Vagrant directory
+.vagrant
+
+# Cassandra installdir
+apache-cassandra-?.?.?
+

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ls /var/run/rsyslogd.pid &> /dev/null
+if [ "$?" != "0" ]; then echo "ERROR: rsyslog not running"; exit 1; fi
+
+# Try connect to logstash syslog listening server
+nc -z 192.168.33.10 5514
+if [ "$?" != "0" ]; then echo "ERROR: syslog logstash not responding on port 5514"; exit 1; fi
+
+logger "syssy log message"
+sleep 60
+curl  '192.168.33.10:9200/_search?q=host:192.168.33.12&pretty'  | grep 192.168.33.12 &> /dev/null
+if [ "$?" != "0" ]; then echo "ERROR: No log messages for syssy"; exit 1; fi
+
+
+echo "=====SUCCESS====="
+

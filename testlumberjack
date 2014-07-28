@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ls /var/run/logstash-forwarder.pid &> /dev/null
+if [ "$?" != "0" ]; then echo "ERROR: logstash-forwarder not running"; exit 1; fi
+
+# Try connect to logstash lumberjack listener server
+nc -z 192.168.33.10 6782
+if [ "$?" != "0" ]; then echo "ERROR: lumberjack not responding on port 6782"; exit 1; fi
+
+logger "lumberjack log message"
+sleep 60
+curl  '192.168.33.10:9200/_search?q=host:lumberjack&pretty'  | grep lumberjack &> /dev/null
+if [ "$?" != "0" ]; then echo "ERROR: No log messages for lumberjack"; exit 1; fi
+
+
+echo "=====SUCCESS====="
+
