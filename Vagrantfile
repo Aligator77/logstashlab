@@ -151,5 +151,30 @@ Vagrant.configure("2") do |config|
     apachejson.vm.provision :shell, :inline => "/vagrant/testapachejson"
   end
 
+  config.vm.define "postfilter" do |postfilter|
+    postfilter.vm.network :private_network, ip: "192.168.33.14"
+    postfilter.vm.hostname = "postfilter"
+
+    postfilter.vm.provision :shell, :inline => "apt-get update"
+    postfilter.vm.provision :shell, :inline => "apt-get -y install openjdk-7-jre-headless"
+    postfilter.vm.provision :shell, :inline => "apt-get -y install curl"
+
+
+    #install logstash
+    postfilter.vm.provision :shell, :inline => "wget -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -"
+    postfilter.vm.provision :shell, :inline => "echo 'deb http://packages.elasticsearch.org/logstash/1.4/debian stable main' > /etc/apt/sources.list.d/logstash.list"
+    postfilter.vm.provision :shell, :inline => "apt-get update"
+    postfilter.vm.provision :shell, :inline => "apt-get -y install logstash"
+    postfilter.vm.provision :shell, :inline => "cp /vagrant/shipperpostfilter.conf /etc/logstash/conf.d/shipperpostfilter.conf"
+    postfilter.vm.provision :shell, :inline => "service logstash start"
+
+    postfilter.vm.provision :shell, :inline => "apt-get -y install postfix &> /dev/null"
+    postfilter.vm.provision :shell, :inline => "apt-get -y install mailutils &> /dev/null"
+
+
+    # HACK This needs to get fixed
+    postfilter.vm.provision :shell, :inline => "chmod 644 /var/log/mail.*"
+  end
+
 
 end
