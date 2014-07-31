@@ -1,0 +1,24 @@
+#!/bin/bash
+
+service logstash status | grep 'is running' &> /dev/null
+if [ "$?" != "0" ]; then echo "ERROR: logstash not running"; exit 1; fi
+
+# Try connect to logstash redis server
+nc -z 192.168.33.10 6379
+if [ "$?" != "0" ]; then echo "ERROR: redis-server not responding on port 6379"; exit 1; fi
+
+# Check that apache is up
+nc -z localhost 80
+if [ "$?" != "0" ]; then echo "ERROR: Apache server not running"; exit 1; fi
+
+curl http://localhost | grep 'hello world'
+if [ "$?" != "0" ]; then echo "ERROR: Hello world page not in place"; exit 1; fi
+
+grep host /var/log/httpd/logstash_access_log
+if [ "$?" != "0" ]; then echo "ERROR: Logfile not working"; exit 1; fi
+
+/opt/logstash/bin/logstash --configtest -f /etc/logstash/conf.d/
+if [ "$?" != "0" ]; then echo "ERROR: Bad logstash configuration"; exit 1; fi
+
+echo "=====SUCCESS====="
+

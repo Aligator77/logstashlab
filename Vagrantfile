@@ -113,5 +113,43 @@ Vagrant.configure("2") do |config|
 
   end
 
+  config.vm.define "apachejson" do |apachejson|
+    apachejson.vm.network :private_network, ip: "192.168.33.13"
+    apachejson.vm.hostname = "apachejson"
+
+    #install logstash
+    apachejson.vm.box = "centos-65-x64-virtualbox-nocm"
+    apachejson.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-nocm.box"
+
+  # Install and configure logstash
+    apachejson.vm.provision :shell, :inline => "rpm --import http://packages.elasticsearch.org/GPG-KEY-elasticsearch"
+    apachejson.vm.provision :shell, :inline => "cp /vagrant/logstash.repo /etc/yum.repos.d/logstash.repo"
+    apachejson.vm.provision :shell, :inline => "yum -y install logstash"
+    apachejson.vm.provision :shell, :inline => "cp /vagrant/shipperfilter.conf /etc/logstash/conf.d/shipperfilter.conf"
+    apachejson.vm.provision :shell, :inline => "service logstash start"
+
+    # Apache, as that is what we are monitoring
+    apachejson.vm.provision :shell, :inline => "yum -y install httpd"
+    apachejson.vm.provision :shell, :inline => "/etc/init.d/httpd start"
+    apachejson.vm.provision :shell, :inline => "cp /vagrant/apache_log.conf /etc/httpd/conf.d"
+    apachejson.vm.provision :shell, :inline => "cp /vagrant/testpage.conf /etc/httpd/conf.d"
+    apachejson.vm.provision :shell, :inline => "/etc/init.d/httpd restart"
+
+    # HACK This needs to get fixed
+    apachejson.vm.provision :shell, :inline => "chmod 644 /var/log/messages"
+    apachejson.vm.provision :shell, :inline => "chmod 644 /var/log/secure"
+    apachejson.vm.provision :shell, :inline => "chmod 755 /var/log/httpd"
+    apachejson.vm.provision :shell, :inline => "chmod 644 /var/log/httpd/logstash_access_log"
+
+    # Helper functions
+    apachejson.vm.provision :shell, :inline => "yum -y install nc"
+
+    # restart logstash in end
+    apachejson.vm.provision :shell, :inline => "service logstash restart"
+
+  # Run self test
+    apachejson.vm.provision :shell, :inline => "/vagrant/testapachejson"
+  end
+
 
 end
