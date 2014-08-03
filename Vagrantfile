@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
   config.vm.provider "virtualbox" do |v|
-    v.customize ["modifyvm", :id, "--memory", 1024]
+    v.customize ["modifyvm", :id, "--memory", 776]
   end  
 
   config.vm.define "logvag" do |logvag|
@@ -168,13 +168,27 @@ Vagrant.configure("2") do |config|
     postfilter.vm.provision :shell, :inline => "cp /vagrant/shipperpostfilter.conf /etc/logstash/conf.d/shipperpostfilter.conf"
     postfilter.vm.provision :shell, :inline => "service logstash start"
 
-    postfilter.vm.provision :shell, :inline => "apt-get -y install postfix &> /dev/null"
-    postfilter.vm.provision :shell, :inline => "apt-get -y install mailutils &> /dev/null"
+    # install postfix
 
+    postfilter.vm.provision :puppet do |puppet|
+      puppet.manifests_path = "manifests"
+      puppet.manifest_file  = "postfilter.pp"
+      puppet.module_path = "modules"
+    end
 
     # HACK This needs to get fixed
     postfilter.vm.provision :shell, :inline => "chmod 644 /var/log/mail.*"
   end
 
+  config.vm.define "pf2" do |pf2|
+    pf2.vm.provision :shell, :inline => "apt-get update"
+    pf2.vm.network :private_network, ip: "192.168.33.44"
+    pf2.vm.hostname = "pf2"
+      pf2.vm.provision :puppet do |puppet|
+        puppet.manifests_path = "manifests"
+        puppet.manifest_file  = "postfilter.pp"
+        puppet.module_path = "modules"
+      end
+  end
 
 end

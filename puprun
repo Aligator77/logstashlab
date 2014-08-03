@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ "$!" == "" ]; then echo "USAGE: puprun <machine>"; exit 1; fi
+
+puppet apply --modulepath '/vagrant/modules:/vagrant/forge' --manifestdir /vagrant/manifests --detailed-exitcodes /vagrant/manifests/$1.pp
+
+
