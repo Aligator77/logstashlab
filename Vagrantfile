@@ -165,7 +165,7 @@ Vagrant.configure("2") do |config|
     postfilter.vm.provision :shell, :inline => "echo 'deb http://packages.elasticsearch.org/logstash/1.4/debian stable main' > /etc/apt/sources.list.d/logstash.list"
     postfilter.vm.provision :shell, :inline => "apt-get update"
     postfilter.vm.provision :shell, :inline => "apt-get -y install logstash"
-    postfilter.vm.provision :shell, :inline => "cp /vagrant/shipperpostfilter.conf /etc/logstash/conf.d/shipperpostfilter.conf"
+    postfilter.vm.provision :shell, :inline => "cp -r /vagrant/postfilter/logstash /etc"
     postfilter.vm.provision :shell, :inline => "service logstash start"
 
     # install postfix
@@ -178,17 +178,6 @@ Vagrant.configure("2") do |config|
 
     # HACK This needs to get fixed
     postfilter.vm.provision :shell, :inline => "chmod 644 /var/log/mail.*"
-  end
-
-  config.vm.define "pf2" do |pf2|
-    pf2.vm.provision :shell, :inline => "apt-get update"
-    pf2.vm.network :private_network, ip: "192.168.33.44"
-    pf2.vm.hostname = "pf2"
-      pf2.vm.provision :puppet do |puppet|
-        puppet.manifests_path = "manifests"
-        puppet.manifest_file  = "postfilter.pp"
-        puppet.module_path = "modules"
-      end
   end
 
 end

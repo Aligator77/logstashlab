@@ -1,0 +1,8 @@
+    COMP ([\w._\/%-]+)
+    COMPID postfix\/%{COMP:component}(?:\[%{POSINT:pid}\])?
+    QUEUEID ([0-9A-F]{,11})
+    POSTFIX %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:hostname} %{COMPID}: %{QUEUEID:queueid}
+    EMAILADDRESSPART [a-zA-Z0-9_.+-=:]+
+    EMAILADDRESS %{EMAILADDRESSPART:local}@%{EMAILADDRESSPART:remote}
+    POSTFIXQMGR %{POSTFIX}: (?:removed|from=<(?:%{EMAILADDRESS:from})?>
+(?:, size=%{POSINT:size}, nrcpt=%{POSINT:nrcpt} \(%{GREEDYDATA:queuestatus}\))?)
